@@ -82,6 +82,7 @@ func challenge(username string, cn net.Conn) string {
 }
 
 func response(user string,response string,chal string,cn net.Conn) {
+	fmt.Println("getting response")
 	dblock()
 	userf,err := os.Open(user)
 	if err != nil {
@@ -98,6 +99,10 @@ func response(user string,response string,chal string,cn net.Conn) {
 	fmt.Fprintf(h,"%s",chal)
 	fmt.Fprintf(h,"%s",str)
 	x := fmt.Sprintf("%x",h.Sum(nil))
+	fmt.Println("User: ",str)
+	fmt.Println("Challenge: ",chal)
+	fmt.Println("Expected Response: ", x)
+	fmt.Println("Actual Response: ", response)
 	if x == response {
 		fmt.Fprintf(cn,"OK\n")
 	} else {
