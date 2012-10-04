@@ -58,6 +58,44 @@ func handler(cn net.Conn) {
 	}
 }
 
+func challenge(username string, cn net.Conn) string {
+	dblock()
+	userf, err := os.Open(username)
+	if err != nil {
+		fmt.Fprintf(cn, "Error: No user\n")
+		dbunlock()
+		return
+	}
+	r := bufio.NewReader(userf)
+	str,err := r.ReadString('\n')
+	str = strings.Trim(" \n\t\r")
+	userf.Close()
+	dbunlock()
+	h := md5.New()
+	t := time.Now()
+	fmt.Fprintf(h,"%s\n",str)
+	fmt.Fprintf(h,"%s\n",t.Local())
+	chal := fmt.Sprintf("%x",h.Sum(nil))
+	fmt.Fprintf(cn,"chal:%s\n",chal)
+	return chal
+}
+
+func response(user string,response string,chal string) {
+	dblock()
+	userf,err := os.Open(user)
+	if err != nil {
+		fmt.Fprintf(cn,"Error: No User\n")
+		dbunlock()
+		return
+	}
+	r := bufio.NewReader(userf)
+	str,err := r.ReadString('\n')
+	str = strings.Trim(" \n\t\r")
+	userf.Close()
+	dbunlock()
+	h := md5.New()
+	
+
 func getuser(user string, cn net.Conn) {
 	dblock()
 	defer dbunlock()
