@@ -80,7 +80,7 @@ func challenge(username string, cn net.Conn) string {
 	return chal
 }
 
-func response(user string,response string,chal string) {
+func response(user string,response string,chal string,cn net.Conn) {
 	dblock()
 	userf,err := os.Open(user)
 	if err != nil {
@@ -94,7 +94,15 @@ func response(user string,response string,chal string) {
 	userf.Close()
 	dbunlock()
 	h := md5.New()
-	
+	fmt.Fprintf(h,"%s",chal)
+	fmt.Fprintf(h,"%s",str)
+	x := fmt.Sprintf("%x",h.Sum(nil))
+	if s == response {
+		fmt.Fprintf(cn,"OK\n")
+	} else {
+		fmt.Fprintf(cn,"Invalid\n")
+	}
+}
 
 func getuser(user string, cn net.Conn) {
 	dblock()
