@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"crypto/md5"
+	"time"
 )
 
 func main() {
@@ -64,11 +65,11 @@ func challenge(username string, cn net.Conn) string {
 	if err != nil {
 		fmt.Fprintf(cn, "Error: No user\n")
 		dbunlock()
-		return
+		return nil
 	}
 	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
-	str = strings.Trim(" \n\t\r")
+	str = strings.Trim(str," \n\t\r")
 	userf.Close()
 	dbunlock()
 	h := md5.New()
@@ -90,14 +91,14 @@ func response(user string,response string,chal string,cn net.Conn) {
 	}
 	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
-	str = strings.Trim(" \n\t\r")
+	str = strings.Trim(str," \n\t\r")
 	userf.Close()
 	dbunlock()
 	h := md5.New()
 	fmt.Fprintf(h,"%s",chal)
 	fmt.Fprintf(h,"%s",str)
 	x := fmt.Sprintf("%x",h.Sum(nil))
-	if s == response {
+	if x == response {
 		fmt.Fprintf(cn,"OK\n")
 	} else {
 		fmt.Fprintf(cn,"Invalid\n")
