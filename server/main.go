@@ -40,10 +40,12 @@ func handler(cn net.Conn) {
 			getuser(s[1], cn)
 		case "verify":
 			verify(s[1], s[2], cn)
+		case "adduser":
+			adduser(s[1], s[2], cn)
 		case "close":
 			return
 		default:
-			fmt.Fprintf(cn, "Invalid\n\r\n")
+			fmt.Fprintf(cn, "Invalid\n")
 			cn.Close()
 			return
 		}
@@ -55,13 +57,13 @@ func getuser(user string, cn net.Conn) {
 	defer dbunlock()
 	userf,err := os.Open(user)
 	if err != nil {
-		fmt.Fprintf(cn,"Error: No user\n\r\n")
+		fmt.Fprintf(cn,"Error: No user\n")
 		return
 	}
 	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
 	str = strings.Trim(str," \n\r\t")
-	fmt.Fprintf(cn,"pass:%s\n\r\n",str)
+	fmt.Fprintf(cn,"pass:%s\n",str)
 	return
 }
 
@@ -70,16 +72,16 @@ func verify(user string, challenge string, cn net.Conn) {
 	defer dbunlock()
 	userf, err := os.Open(user)
 	if err != nil {
-		fmt.Fprintf(cn,"Error: No user\n\r\n")
+		fmt.Fprintf(cn,"Error: No user\n")
 		return
 	}
 	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
 	str = strings.Trim(str," \n\r\t")
 	if challenge == str {
-		fmt.Fprintf(cn,"OK\n\r\n")
+		fmt.Fprintf(cn,"OK\n")
 	} else {
-		fmt.Fprintf(cn,"Fail\n\r\n")
+		fmt.Fprintf(cn,"Fail\n")
 	}
 	return
 }
@@ -95,4 +97,19 @@ func dblock() {
 func dbunlock() {
 	os.Remove("lockfile")
 }
+
+func adduser(username string, password string, cn net.Conn) {
+	dblock()
+	defer dbunlock()
+	userf,err := os.Create(username)
+	if err != nil {
+		fmt.Fprintf(cn,"User Exists\n")
+		return
+	}
+	fmt.Fprintf(userf,"%s\n",password)
+	fmt.Fprintf(cn,"User Created\n")
+	userf.Close()
+	return
+}
+
 	
