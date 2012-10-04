@@ -28,6 +28,7 @@ func main() {
 
 func handler(cn net.Conn) {
 	cnr := bufio.NewReader(cn)
+	var chall string
 	defer cn.Close()
 	for {
 		str, err := cnr.ReadString('\n')
@@ -45,6 +46,10 @@ func handler(cn net.Conn) {
 			adduser(s[1], s[2], cn)
 		case "close":
 			return
+		case "challenge":
+			chall = challenge(s[1],cn)
+		case "response":
+			response(s[1],s[2],chall,cn)
 		default:
 			fmt.Fprintf(cn, "Invalid\n")
 			cn.Close()
