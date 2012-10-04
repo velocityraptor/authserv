@@ -1,0 +1,6 @@
+Velocityraptor Authserver -- Simple authentication
+
+	The Velocityraptor Authserver allows you to write applications that
+authenticate users very simply. It uses a simple protocol to communicate
+user data.
+
