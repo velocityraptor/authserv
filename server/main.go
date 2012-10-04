@@ -65,7 +65,7 @@ func challenge(username string, cn net.Conn) string {
 	if err != nil {
 		fmt.Fprintf(cn, "Error: No user\n")
 		dbunlock()
-		return nil
+		return ""
 	}
 	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
