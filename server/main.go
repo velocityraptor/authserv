@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -44,3 +45,40 @@ func handler(cn net.Conn) {
 		}
 	}
 }
+
+func getuser(user string, cn net.Conn) {
+	dblock()
+	defer dbunlock()
+	user,err := os.Open(user, O_RDWR)
+	if err != nil {
+		fmt.Fprintf(cn,"Error: No user\n\r\n")
+		return
+	}
+	r := bufio.NewReader(user)
+	str,err := r.ReadString('\n')
+	str = strings.Trim(str," \n\r\t")
+	fmt.Fprintf(cn,"pass:%s\n\r\n",str)
+	return
+}
+
+func verify(user string, challenge string, cn net.Conn) {
+	dblock()
+	defer dbunlock()
+	user, err := os.Open(user, O_RDWR)
+	if err != nil {
+		fmt.Fprintf(cn,"Error: No user\n\r\n")
+		return
+	}
+	r := bufio.NewReader(user)
+	str,err := r.ReadString('\n')
+	str = strings.Trim(str," \n\r\t")
+	if challenge == str {
+		fmt.Fprintf(cn,"OK\n\r\n")
+	} else {
+		fmt.Fprintf(cn,"Fail\n\r\n")
+	}
+	return
+}
+
+func dblock() {
+	
