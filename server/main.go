@@ -27,8 +27,12 @@ func main() {
 
 func handler(cn net.Conn) {
 	cnr := bufio.NewReader(cn)
+	defer cn.Close()
 	for {
 		str, err := cnr.ReadString('\n')
+		if err != nil {
+			continue
+		}
 		str = strings.Trim(str, " \n\r\t")
 		s := strings.Split(str, " ")
 		switch s[0] {
@@ -36,8 +40,8 @@ func handler(cn net.Conn) {
 			getuser(s[1], cn)
 		case "verify":
 			verify(s[1], s[2], cn)
-		case "netkey":
-			netkey_verify(s[1], s[2], cn)
+		case "close":
+			return
 		default:
 			fmt.Fprintf(cn, "Invalid\n\r\n")
 			cn.Close()
@@ -49,12 +53,12 @@ func handler(cn net.Conn) {
 func getuser(user string, cn net.Conn) {
 	dblock()
 	defer dbunlock()
-	user,err := os.Open(user, O_RDWR)
+	userf,err := os.Open(user)
 	if err != nil {
 		fmt.Fprintf(cn,"Error: No user\n\r\n")
 		return
 	}
-	r := bufio.NewReader(user)
+	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
 	str = strings.Trim(str," \n\r\t")
 	fmt.Fprintf(cn,"pass:%s\n\r\n",str)
@@ -64,12 +68,12 @@ func getuser(user string, cn net.Conn) {
 func verify(user string, challenge string, cn net.Conn) {
 	dblock()
 	defer dbunlock()
-	user, err := os.Open(user, O_RDWR)
+	userf, err := os.Open(user)
 	if err != nil {
 		fmt.Fprintf(cn,"Error: No user\n\r\n")
 		return
 	}
-	r := bufio.NewReader(user)
+	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
 	str = strings.Trim(str," \n\r\t")
 	if challenge == str {
@@ -81,4 +85,14 @@ func verify(user string, challenge string, cn net.Conn) {
 }
 
 func dblock() {
+	lockfile,err := os.Create("lockfile")
+	for err != nil {
+		lockfile,err = os.Create("lockfile")
+	}
+	lockfile.Close()
+}
+
+func dbunlock() {
+	os.Remove("lockfile")
+}
 	
