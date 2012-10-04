@@ -171,6 +171,9 @@ func adduser(username string, password string, cn net.Conn) {
 	fmt.Fprintf(h, "%s", password)
 	fmt.Fprintf(userf, "%x\n", h.Sum(nil))
 	fmt.Fprintf(cn, "User Created\n")
+	fmt.Println("User: ", username)
+	fmt.Println("Pass: xxxxxxxxxxxx")
+	fmt.Println("User Created")
 	userf.Close()
 	return
 }
