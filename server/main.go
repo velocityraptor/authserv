@@ -56,15 +56,15 @@ func handler(cn net.Conn) {
 func getuser(user string, cn net.Conn) {
 	dblock()
 	defer dbunlock()
-	userf,err := os.Open(user)
+	userf, err := os.Open(user)
 	if err != nil {
-		fmt.Fprintf(cn,"Error: No user\n")
+		fmt.Fprintf(cn, "Error: No user\n")
 		return
 	}
 	r := bufio.NewReader(userf)
-	str,err := r.ReadString('\n')
-	str = strings.Trim(str," \n\r\t")
-	fmt.Fprintf(cn,"pass:%s\n",str)
+	str, err := r.ReadString('\n')
+	str = strings.Trim(str, " \n\r\t")
+	fmt.Fprintf(cn, "pass:%s\n", str)
 	return
 }
 
@@ -73,27 +73,27 @@ func verify(user string, challenge string, cn net.Conn) {
 	defer dbunlock()
 	userf, err := os.Open(user)
 	if err != nil {
-		fmt.Fprintf(cn,"Error: No user\n")
+		fmt.Fprintf(cn, "Error: No user\n")
 		return
 	}
 	r := bufio.NewReader(userf)
-	str,err := r.ReadString('\n')
-	str = strings.Trim(str," \n\r\t")
+	str, err := r.ReadString('\n')
+	str = strings.Trim(str, " \n\r\t")
 	h := md5.New()
-	fmt.Fprintf(h,"%s",challenge)
-	challenge = fmt.Sprintf("%x",h.Sum(nil))
+	fmt.Fprintf(h, "%s", challenge)
+	challenge = fmt.Sprintf("%x", h.Sum(nil))
 	if challenge == str {
-		fmt.Fprintf(cn,"OK\n")
+		fmt.Fprintf(cn, "OK\n")
 	} else {
-		fmt.Fprintf(cn,"Fail\n")
+		fmt.Fprintf(cn, "Fail\n")
 	}
 	return
 }
 
 func dblock() {
-	lockfile,err := os.Create("lockfile")
+	lockfile, err := os.Create("lockfile")
 	for err != nil {
-		lockfile,err = os.Create("lockfile")
+		lockfile, err = os.Create("lockfile")
 	}
 	lockfile.Close()
 }
@@ -105,17 +105,15 @@ func dbunlock() {
 func adduser(username string, password string, cn net.Conn) {
 	dblock()
 	defer dbunlock()
-	userf,err := os.Create(username)
+	userf, err := os.Create(username)
 	if err != nil {
-		fmt.Fprintf(cn,"User Exists\n")
+		fmt.Fprintf(cn, "User Exists\n")
 		return
 	}
 	h := md5.New()
-	fmt.Fprintf(h,"%s",password)
-	fmt.Fprintf(userf,"%x\n",h.Sum(nil))
-	fmt.Fprintf(cn,"User Created\n")
+	fmt.Fprintf(h, "%s", password)
+	fmt.Fprintf(userf, "%x\n", h.Sum(nil))
+	fmt.Fprintf(cn, "User Created\n")
 	userf.Close()
 	return
 }
-
-	
