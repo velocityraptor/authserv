@@ -6,11 +6,12 @@ import (
 	"bufio"
 	"os"
 	"strings"
+	"crypto/md5"
 )
 
 func main() {
 	fmt.Println("Velocityraptor Authserver")
-	fmt.Println("Revision 0")
+	fmt.Println("Revision 1")
 	ln, err := net.Listen("tcp", ":12345")
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -78,6 +79,9 @@ func verify(user string, challenge string, cn net.Conn) {
 	r := bufio.NewReader(userf)
 	str,err := r.ReadString('\n')
 	str = strings.Trim(str," \n\r\t")
+	h := md5.New()
+	fmt.Fprintf(h,"%s",challenge)
+	challenge = fmt.Sprintf("%x",h.Sum(nil))
 	if challenge == str {
 		fmt.Fprintf(cn,"OK\n")
 	} else {
@@ -106,7 +110,9 @@ func adduser(username string, password string, cn net.Conn) {
 		fmt.Fprintf(cn,"User Exists\n")
 		return
 	}
-	fmt.Fprintf(userf,"%s\n",password)
+	h := md5.New()
+	fmt.Fprintf(h,"%s",password)
+	fmt.Fprintf(userf,"%x\n",h.Sum(nil))
 	fmt.Fprintf(cn,"User Created\n")
 	userf.Close()
 	return
